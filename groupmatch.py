@@ -2,9 +2,9 @@ import pandas as pd
 import random
 import numpy as np
 
+from group import *
 
-
-class GroupMatchSimulator:
+class GroupMatch:
     def __init__(self, group_instance):
         self.group_instance = group_instance
 
@@ -22,12 +22,14 @@ class GroupMatchSimulator:
         prob_a_wins = self.calculate_win_probability(team_a[1], team_b[1])
         prob_b_wins = self.calculate_win_probability(team_b[1], team_a[1])
 
+        k=1*10**-7
+        prob_draw = team_a[1]*team_b[1]*k
         # Simulate the match based on probabilities
         random_chance = random.random()
-        if random_chance < prob_a_wins:
+        if random_chance < prob_a_wins - prob_draw/2:
             # Team A wins
             return (3, 0)
-        elif random_chance < prob_a_wins + prob_b_wins:  # Adjust for draw probability
+        elif random_chance < prob_a_wins + prob_b_wins - prob_draw:  # Adjust for draw probability
             # Team B wins
             return (0, 3)
         else:

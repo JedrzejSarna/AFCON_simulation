@@ -1,14 +1,16 @@
-from team import *
-from group import *
-from group_match_simulator import *
-
 import pandas as pd
 import random
 import numpy as np
 
 
+from team import *
+from group import *
+from groupmatch import *
+from knockoutstage import *
 
-team = {
+
+
+teams = {
     "Ivory_Coast": Team("Ivory_Coast", 1647),
     "Nigeria": Team("Nigeria", 1568),
     "Equatorial_Guinea": Team("Equatorial_Guinea", 1507),
@@ -50,32 +52,72 @@ group_D = Group(group_d_names)
 group_E = Group(group_e_names)
 group_F = Group(group_f_names)
 
-group_A_matches = GroupMatchSimulator(group_A)
-group_A_matches.update_table()
-group_B_matches = GroupMatchSimulator(group_B)
-group_B_matches.update_table()
-group_C_matches = GroupMatchSimulator(group_C)
-group_C_matches.update_table()
-group_D_matches = GroupMatchSimulator(group_D)
-group_D_matches.update_table()
-group_E_matches = GroupMatchSimulator(group_E)
-group_E_matches.update_table()
-group_F_matches = GroupMatchSimulator(group_F)
-group_F_matches.update_table()
+############# SIMULATE THE TOURNAMENT
+win_counts = {}
 
-group_A.table
-group_B.table
+# Number of simulations
+num_simulations = 1000
 
-group_A.get_final_standings()
-group_B.get_final_standings()
-group_C.get_final_standings()
-group_D.get_final_standings()
-group_E.get_final_standings()
-group_F.get_final_standings()
+for _ in range(num_simulations):
 
-group_A.final_standings
-group_B.final_standings
-group_C.final_standings
-group_D.final_standings
-group_E.final_standings
-group_F.final_standings
+    group_A_matches = GroupMatch(group_A)
+    group_A_matches.update_table()
+    group_B_matches = GroupMatch(group_B)
+    group_B_matches.update_table()
+    group_C_matches = GroupMatch(group_C)
+    group_C_matches.update_table()
+    group_D_matches = GroupMatch(group_D)
+    group_D_matches.update_table()
+    group_E_matches = GroupMatch(group_E)
+    group_E_matches.update_table()
+    group_F_matches = GroupMatch(group_F)
+    group_F_matches.update_table()
+
+    group_A.get_final_standings()
+    group_B.get_final_standings()
+    group_C.get_final_standings()
+    group_D.get_final_standings()
+    group_E.get_final_standings()
+    group_F.get_final_standings()
+
+    groups_list = [group_A, group_B, group_C, group_D, group_E, group_F]
+    Third_place_teams = Group.aggregate_third_place_teams(groups_list)
+
+
+
+
+    FINALS = KnockoutStage(group_A, group_B, group_C, group_D, group_E, group_F, Third_place_teams)
+
+    #FINALS.show_matches_and_probabilities_round_of_16()
+    FINALS.simulate_round_of_16()
+    #FINALS.round_of_16_winners
+
+    #FINALS.show_matches_and_probabilities_quarter_finals()
+    FINALS.simulate_quarter_finals()
+    #FINALS.quarter_finals_winners
+
+    #FINALS.show_matches_and_probabilities_semi_finals()
+    FINALS.simulate_semi_finals()
+    #FINALS.semi_finals_winners
+
+    #FINALS.show_match_and_probabilities_third_place_playoff()
+    FINALS.simulate_third_place_playoff()
+
+    #FINALS.show_match_and_probabilities_final()
+    FINALS.simulate_final()
+
+    winner = FINALS.WINNER
+    if winner in win_counts:
+        win_counts[winner] += 1
+    else:
+        win_counts[winner] = 1
+    
+    #FINALS.SECOND_PLACE
+    #FINALS.THIRD_PLACE
+
+print(f"Win Counts after {num_simulations} simulations:")
+win_counts_df = pd.DataFrame(list(win_counts.items()), columns=['Team', 'Wins'])
+
+win_counts_df['Frequency'] = win_counts_df['Wins'] / num_simulations
+win_counts_df = win_counts_df.sort_values(by='Frequency', ascending=False).reset_index(drop=True)
+print(win_counts_df) 
